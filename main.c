@@ -11,37 +11,25 @@ typedef struct Data{
 	int wrongchoice;
 }data;
 
-int a,b,c,d,i,stuck,ans,modelansnum;
-char ansc[10];
-
 FILE FileRead(char[] filepath){
     return;
 }
 
-void Reset()
-{
-	a=0;
-	b=0;
-	c=0;
-	d=0;
-	i=0;
-	stuck=0;
-	ans=0;
-	modelansnum=0;
-}
-
-void InputAnswer(){
+int InputAnswer(){
+	int ans;
+	char ansc[10];
 	while(1){
 		printf("解答 -->");
 		scanf("%s",ansc); // char型で読み込む
 		if (strlen(ansc) == 1) ans = ansc[0] - 48; // 一文字の場合int型に変換する
 		if(ans == 1 || ans == 2 || ans == 3 || ans == 4){
-			break;
+			return ans;
 		}else{
 			printf("error:正しく入力を行ってください\n");
 		}
 	}
 }
+
 void Output()
 {
 	/* 動作確認用
@@ -53,7 +41,15 @@ void Output()
 	strcpy(x.choice[3],"choice4");
 	strcpy(x.modelans,"choice1");
 	x.wrongchoice=5;　*/
-	Reset();
+	int a,b,c,d,i,stuck,ans,modelansnum;
+	a=0;
+	b=0;
+	c=0;
+	d=0;
+	i=0;
+	stuck=0;
+	ans=0;
+	modelansnum=0;
 	/* 問題文の出力 */
 	printf("問：%s\n間違えた回数 --> %d\n",x.question,x.wrongchoice);
 	/* 選択肢のランダム化 */
@@ -89,8 +85,7 @@ void Output()
 	/* ランダム化した選択肢の出力 */
 	printf("1.%s\n2.%s\n3.%s\n4.%s\n",x.choice[a],x.choice[b],x.choice[c],x.choice[d]);
 	/* 解答の入力受付 */
-	InputAnswer();
-	printf("あなたの解答 --> %s\n",x.choice[ans]);
+	ans=InputAnswer();
 	/* 答え合わせ */
 	printf("模範解答 --> %s\n",x.modelans);
 	if(ans == modelansnum){
