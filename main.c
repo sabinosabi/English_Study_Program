@@ -52,6 +52,7 @@ void TagRead(char filepath[],char *tags[]){
 
 void ManageTag(){
     /*
+        ManageTag()と呼び出すだけで以下のことを行います
         問題テキストファイルを一個づつ全部読み出していき、TagRead関数を用いて抽出したタグから（タグ名）.txtを作成する関数
         問題テキストファイルの置き場所をquestionsディレクトリ、タグ名のついたテキストファイルの置き場所をtagsディレクトリとしている
     */
@@ -96,6 +97,6 @@ void CreateProblem(){
 }
 
 int main(){
-	ManageTag();
+    //ManageTag();
     return 0;
 }
