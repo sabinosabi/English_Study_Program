@@ -41,7 +41,6 @@ void TagRead(char filepath[],char *tags[]){
         tags[i] = strtok(s," ");
         strcat(tags[i],"");
         while(tags[i]!=NULL){
-            printf("%s ",tags[i]);
             i++;
             tags[i] = strtok(NULL," ");
             strcat(tags[i],"");
