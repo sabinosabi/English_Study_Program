@@ -45,7 +45,12 @@ void TagRead(char filepath[],char *tags[]){
             tags[i] = strtok(NULL," ");
             strcat(tags[i],"");
         }
-        tags[i-1][strlen(tags[i-1])-1] = '\0';
+        //LinuxかWindowsで改行コードが違うので
+        if(tags[i-1][strlen(tags[i-1])-2] == '\r'){
+            tags[i-1][strlen(tags[i-1])-2] = '\0';
+        }else{
+            tags[i-1][strlen(tags[i-1])-1] = '\0';
+        }
     }
     fclose(f);
 }
