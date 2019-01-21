@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<ctype.h>
 
 FILE FileRead(char filepath[]){
     return;
@@ -15,7 +16,51 @@ void CheckAnswer(){
 }
 
 void Menu(){
-    return;
+    int n,flag1=1,flag2=1, FLAG=1;
+    char buf[32];
+    while(flag2==1){
+        flag1=1;
+        puts("\n学習方法を数字で選択してください。");
+        puts("--------------------------------------");
+        puts(" 1 | ジャンルを絞って問題を出題\n");
+        puts(" 2 | ランダムに問題を出題\n");
+        puts(" 0 | プログラムを終了する。");
+        puts("--------------------------------------\n");
+        scanf("%s",buf);
+        while(flag1==1) {
+            FLAG=1;
+            for(int i=0; i<strlen(buf); i++){
+                if(isdigit(buf[i]) == 0) {
+                    FLAG = 0;
+                }
+            }
+            if(FLAG == 0){
+                printf("0〜2の一桁の数字で入力してください。\n");
+                scanf("%s", buf);
+                flag1=1;
+            }else{
+                n = atoi(buf);
+                flag1=0;
+            }
+        }
+        switch(n){
+            case 1:
+                puts("success!\n");
+                flag2=1;
+                break;
+                case 2:
+                puts("ええかんでぃ\n");
+                flag2=1;
+                break;
+            case 0:
+                puts("お疲れ様でした。\n");
+                flag2=0;
+                break;
+            default:
+                puts("もう一度入力してください。\n");
+                break;
+        }
+    }
 }
 
 void TagRead(char filepath[],char *tags[]){
@@ -103,5 +148,6 @@ void CreateProblem(){
 
 int main(){
     //ManageTag();
+    Menu();
     return 0;
 }
