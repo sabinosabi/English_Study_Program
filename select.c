@@ -13,7 +13,7 @@ void Select();
 void Random();
 void Qopen();
 
-int main(){    //仮実行用 ドライバ
+/*int main(){    //仮実行用 ドライバ
 	char str[10];
 	printf("タグを選択してください\n");
 	scanf("%s",str);
@@ -21,7 +21,7 @@ int main(){    //仮実行用 ドライバ
 	Qopen();
 	//printf("正常終了\n");
 	return 0;
-}
+}*/ //str(適当なタグ名保管変数)にmenu部で格納済みの場合不要
 
 void Select(char str2[10]){ //問題選択
 	//タグファイル開く
@@ -67,11 +67,15 @@ void Random(){
 	}
 }
 
-void Qopen(){
+void Qopen(){ //
 	int i;
+	FILE *fs;
 	for(i=1;i<=qes;i++){
-		strcpy(last[i],s[num[i]-1]);
-		printf("%2d番目の問題:%s",i,last[i]);//スタブ
+		fs=fopen(s[num[i]-1],"r");
+		//ここに出題部を接続
+		fclose(fs);
+		//strcpy(last[i],s[num[i]-1]);
+		//printf("%2d番目の問題:%s",i,last[i]);//スタブ
 	}
 }
 
