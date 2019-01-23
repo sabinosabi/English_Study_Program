@@ -2,8 +2,97 @@
 #include<stdlib.h>
 #include<string.h>
 
-FILE FileRead(char filepath[]){
-    return;
+typedef struct Data{
+    char question[100];
+    char choice[4][50];
+    char modelans[50];
+    char tag[10][50];
+    int wrongchoice;
+    char quespath[50];
+}data;
+
+char *RemoveN(char *readline) {
+    char *result;
+    result = strtok(readline, "\n");
+    return result;
+}
+
+char SpritSpaceMode(char *ptr, int mode, int cnt) {
+    switch (mode) {
+        case 0:
+            strcpy(_Data.tag[cnt], ptr);
+            //puts(_Data.tag[cnt]);
+            break;
+        case 1:
+            strcpy(_Data.choice[cnt], ptr);
+            //puts(_Data.choice[cnt]);
+            break;
+        default:
+            puts("エラー");
+    }
+}
+
+char SpritSpace(char *readline, int mode) {
+    int cnt = 0;
+    char *ptr;
+
+    ptr = strtok(readline, " ");
+    SpritSpaceMode(ptr, mode, cnt);
+    cnt++;
+
+    while (ptr!=NULL) {
+        ptr = strtok(NULL, " ");
+        if (ptr!=NULL) {
+            SpritSpaceMode(ptr, mode, cnt);
+            cnt++;
+        }
+    }
+}
+
+void ReadFile(char filepath[]) {
+    FILE *fo;
+    char filename[100];
+    char readline[100] = {'\0'};
+
+    memcpy(filename,filepath,strlen(filepath));
+
+    if ((fo = fopen(filename, "r")) == NULL) {
+        fprintf(stderr, "%sのオープンに失敗しました.\n", filename);
+        exit(EXIT_FAILURE);
+    }
+
+
+
+    /* 1行目の処理 <tag> */
+    fgets(readline, 100, fo);
+    if (strstr(readline, " ")!=NULL) {
+        SpritSpace(RemoveN(readline), 0);
+    }
+    else {
+        strcpy(_Data.tag[0], RemoveN(readline));
+        //puts(_Data.tag[0]);
+    }
+
+    /* 2行目の処理 <wrongchoice> */
+    fgets(readline, 100, fo);
+    _Data.wrongchoice =  atoi(RemoveN(readline));
+    //printf("%d\n", _Data.wrongchoice);
+
+    /* 3行目の処理 <question> */
+    fgets(readline, 100, fo);
+    strcpy(_Data.question, RemoveN(readline));
+    //puts(_Data.question);
+
+    /* 4行目の処理 <choice> */
+    fgets(readline, 100, fo);
+    SpritSpace(RemoveN(readline), 1);
+
+    /* 5行目の処理 <modelans> */
+    fgets(readline, 100, fo);
+    strcpy(_Data.modelans, RemoveN(readline));
+    //puts(_Data.modelans);
+
+    fclose(fo);
 }
 
 void Output(){
