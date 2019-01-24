@@ -75,11 +75,7 @@ void Qopen(){ //
 	int i;
 	FILE *fs;
 	for(i=1;i<=qes;i++){
-		fs=fopen(s[num[i]-1],"r");
-		//ここに出題部を接続
-		fclose(fs);
-		//strcpy(last[i],s[num[i]-1]);
-		//printf("%2d番目の問題:%s",i,last[i]);//スタブ
+		ReadFile(s[num[i]-1]);//void ReadFile(char filepath[])参照
 	}
 }
 
