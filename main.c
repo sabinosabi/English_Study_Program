@@ -17,43 +17,57 @@ char *RemoveN(char *readline) {
     return result;
 }
 
-char SpritSpaceMode(char *ptr, int mode, int cnt) {
+char SpritSpaceMode(char *ptr, int mode, int cnt, data *x){
     switch (mode) {
         case 0:
-            strcpy(_Data.tag[cnt], ptr);
-            //puts(_Data.tag[cnt]);
+            strcpy(x->tag[cnt], ptr);
+            //puts(x->tag[cnt]);
             break;
         case 1:
-            strcpy(_Data.choice[cnt], ptr);
-            //puts(_Data.choice[cnt]);
+            strcpy(x->choice[cnt], ptr);
+            //puts(x->choice[cnt]);
             break;
         default:
             puts("エラー");
     }
 }
 
-char SpritSpace(char *readline, int mode) {
+char SpritSpace(char *readline, int mode,data *x) {
     int cnt = 0;
     char *ptr;
 
     ptr = strtok(readline, " ");
-    SpritSpaceMode(ptr, mode, cnt);
+    SpritSpaceMode(ptr, mode, cnt, x);
     cnt++;
 
     while (ptr!=NULL) {
         ptr = strtok(NULL, " ");
         if (ptr!=NULL) {
-            SpritSpaceMode(ptr, mode, cnt);
+            SpritSpaceMode(ptr, mode, cnt, x);
             cnt++;
         }
     }
 }
 
-void ReadFile(char filepath[]) {
+data ReadFile(char filepath[]) {
+	data x;
     FILE *fo;
     char filename[100];
     char readline[100] = {'\0'};
 
+	for(int i=0;i<10;i++){
+		x.tag[i][0] = '\0';
+	}
+	for(int i=0;i<4;i++){
+		x.choice[i][0] = '\0';
+	}
+	
+	x.question[0] = '\0';
+	x.modelans[0] = '\0';
+	x.quespath[0] = '\0';
+	x.wrongchoice = 0;
+	
+	
     memcpy(filename,filepath,strlen(filepath));
 
     if ((fo = fopen(filename, "r")) == NULL) {
@@ -61,38 +75,40 @@ void ReadFile(char filepath[]) {
         exit(EXIT_FAILURE);
     }
 
-
+	
 
     /* 1行目の処理 <tag> */
     fgets(readline, 100, fo);
     if (strstr(readline, " ")!=NULL) {
-        SpritSpace(RemoveN(readline), 0);
+        SpritSpace(RemoveN(readline), 0, &x);
     }
     else {
-        strcpy(_Data.tag[0], RemoveN(readline));
-        //puts(_Data.tag[0]);
+        strcpy(x.tag[0], RemoveN(readline));
+        //puts(x.tag[0]);
     }
 
     /* 2行目の処理 <wrongchoice> */
     fgets(readline, 100, fo);
-    _Data.wrongchoice =  atoi(RemoveN(readline));
-    //printf("%d\n", _Data.wrongchoice);
+    x.wrongchoice =  atoi(RemoveN(readline));
+    //printf("%d\n", x.wrongchoice);
 
     /* 3行目の処理 <question> */
     fgets(readline, 100, fo);
-    strcpy(_Data.question, RemoveN(readline));
-    //puts(_Data.question);
+    strcpy(x.question, RemoveN(readline));
+    //puts(x.question);
 
     /* 4行目の処理 <choice> */
     fgets(readline, 100, fo);
-    SpritSpace(RemoveN(readline), 1);
+    SpritSpace(RemoveN(readline), 1, &x);
 
     /* 5行目の処理 <modelans> */
     fgets(readline, 100, fo);
-    strcpy(_Data.modelans, RemoveN(readline));
-    //puts(_Data.modelans);
+    strcpy(x.modelans, RemoveN(readline));
+    //puts(x.modelans);
 
     fclose(fo);
+    
+    return x;
 }
 
 void Output(){
@@ -192,5 +208,29 @@ void CreateProblem(){
 
 int main(){
     //ManageTag();
+    
+    /* FileReadデバッグ
+    data test;
+    char filepath[] = "questions/qes001.txt";
+    test = ReadFile(filepath);
+    int i=0;
+    while(test.tag[i][0]!='\0'){
+    	printf("%s",test.tag[i]);
+    	i++;
+    }
+    printf("\n");
+    
+    printf("%d\n",test.wrongchoice);
+    
+    printf("%s\n",test.question);
+    
+    for(i=0;i<4;i++){
+    	printf("%s\n",test.choice[i]);
+    }
+    
+    printf("%s\n",test.modelans);
+    */
+    
+    
     return 0;
 }
