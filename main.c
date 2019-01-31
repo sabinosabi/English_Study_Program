@@ -2,7 +2,6 @@
 #include<stdlib.h>
 #include<string.h>
 #include<ctype.h>
-#include<stdlib.h>
 #include<time.h>
 
 int line; //タグファイルの行数(何もない改行をしない)
