@@ -337,6 +337,7 @@ void Output_ama()
 		printf("正解！\n");
 	}else if(ans != modelansnum){
 		printf("不正解...\n");
+		CountWA(x);
 	}else{
 		printf("program error\n");
 	}
