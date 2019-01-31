@@ -2,14 +2,7 @@
 #include<stdlib.h>
 #include<string.h>
 #include<ctype.h>
-#include<stdlib.h>
 #include<time.h>
-
-int line; //タグファイルの行数(何もない改行をしない)
-int qes;//出題数
-int num[100]; //ランダム数格納用
-char s[100][30]; //100列分、1列辺り30文字まで
-char last[100][30];
 
 typedef struct Data{
     char question[100];
@@ -60,9 +53,9 @@ char SpritSpace(char *readline, int mode,data *x) {
 
 data ReadFile(char filepath[]) {
 	data x;
-    FILE *fo;
-    char filename[100];
-    char readline[100] = {'\0'};
+	FILE *fo;
+	char filename[100];
+	char readline[100] = {'\0'};
 
 	for(int i=0;i<10;i++){
 		x.tag[i][0] = '\0';
@@ -77,57 +70,64 @@ data ReadFile(char filepath[]) {
 	x.wrongchoice = 0;
 	
 	
-    memcpy(filename,filepath,strlen(filepath));
+	memcpy(filename,filepath,strlen(filepath));
 
-    if ((fo = fopen(filename, "r")) == NULL) {
-        fprintf(stderr, "%sのオープンに失敗しました.\n", filename);
-        exit(EXIT_FAILURE);
-    }
+	if ((fo = fopen(filename, "r")) == NULL) {
+		fprintf(stderr, "%sのオープンに失敗しました.\n", filename);
+		exit(EXIT_FAILURE);
+	}
 
 	
 
-    /* 1行目の処理 <tag> */
-    fgets(readline, 100, fo);
-    if (strstr(readline, " ")!=NULL) {
-        SpritSpace(RemoveN(readline), 0, &x);
-    }
-    else {
-        strcpy(x.tag[0], RemoveN(readline));
-        //puts(x.tag[0]);
-    }
+	/* 1行目の処理 <tag> */
+	fgets(readline, 100, fo);
+	if (strstr(readline, " ")!=NULL) {
+		SpritSpace(RemoveN(readline), 0, &x);
+	}
+	else {
+		strcpy(x.tag[0], RemoveN(readline));
+	//puts(x.tag[0]);
+	}
 
-    /* 2行目の処理 <wrongchoice> */
-    fgets(readline, 100, fo);
-    x.wrongchoice =  atoi(RemoveN(readline));
-    //printf("%d\n", x.wrongchoice);
+	/* 2行目の処理 <wrongchoice> */
+	fgets(readline, 100, fo);
+	x.wrongchoice =  atoi(RemoveN(readline));
+	//printf("%d\n", x.wrongchoice);
 
-    /* 3行目の処理 <question> */
-    fgets(readline, 100, fo);
-    strcpy(x.question, RemoveN(readline));
-    //puts(x.question);
+	/* 3行目の処理 <question> */
+	fgets(readline, 100, fo);
+	strcpy(x.question, RemoveN(readline));
+	//puts(x.question);
 
-    /* 4行目の処理 <choice> */
-    fgets(readline, 100, fo);
-    SpritSpace(RemoveN(readline), 1, &x);
+	/* 4行目の処理 <choice> */
+	fgets(readline, 100, fo);
+	SpritSpace(RemoveN(readline), 1, &x);
 
-    /* 5行目の処理 <modelans> */
-    fgets(readline, 100, fo);
-    strcpy(x.modelans, RemoveN(readline));
-    //puts(x.modelans);
+	/* 5行目の処理 <modelans> */
+	fgets(readline, 100, fo);
+	strcpy(x.modelans, RemoveN(readline));
+	//puts(x.modelans);
 
-    fclose(fo);
+	fclose(fo);
     
-    return x;
+	return x;
 }
 
-void Output(){
-    char str[10];
-	printf("タグを選択してください\n");
-	scanf("%s",str);
+void Output(int frag){
+	int line; //タグファイルの行数(何もない改行をしない)
+	int qes;//出題数
+	int num[100]; //ランダム数格納用
+	char s[100][30]; //100列分、1列辺り30文字まで
+	char str[10];
+	if(frag==1){
+		printf("タグを選択してください\n");
+			scanf("%s",str);
+	}else{
+		strcpy(str,"All");//全問題のファイルはAll.txtでよろしく
+	}
 	Select(str);
 	Qopen();
 	//printf("正常終了\n");
-	return 0;
 }//str(適当なタグ名保管変数)にmenu部で格納済みの場合不要
 
 void Select(char str2[10]){ //問題選択
@@ -174,11 +174,12 @@ void Random(){
 	}
 }
 
-void Qopen(){ //
+data Qopen(){
 	int i;
-	FILE *fs;
+	data p;
 	for(i=1;i<=qes;i++){
-		ReadFile(s[num[i]-1]);//void ReadFile(char filepath[])参照
+		p[i-1]=ReadFile(s[num[i]-1]);//void ReadFile(char filepath[])参照
+		Question(p[i-1]);
 	}
 }
 
@@ -276,7 +277,7 @@ int InputAnswer(){
 	}
 }
 
-void Output_ama()
+void Question(data x)
 {
 	/* 動作確認用
 	data x;
@@ -403,21 +404,23 @@ void Menu(){
             }
         }
         switch(n){
-            case 1:
-                puts("success!\n");
-                flag2=1;
-                break;
-                case 2:
-                puts("ええかんでぃ\n");
-                flag2=1;
-                break;
-            case 0:
-                puts("お疲れ様でした。\n");
-                flag2=0;
-                break;
-            default:
-                puts("もう一度入力してください。\n");
-                break;
+		case 1:
+			//puts("success!\n");
+			Output(1);
+			flag2=1;
+			break;
+		case 2:
+			//puts("ええかんでぃ\n");
+			Output(0);
+			flag2=1;
+			break;
+		case 0:
+			puts("お疲れ様でした。\n");
+			flag2=0;
+			break;
+		default:
+			puts("もう一度入力してください。\n");
+			break;
         }
     }
 }
