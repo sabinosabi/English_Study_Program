@@ -5,14 +5,11 @@
 #include<stdlib.h>
 #include<time.h>
 
-typedef struct Data{
-	char question[100];
-	char choice[4][50];
-	char modelans[50];
-	char tag[10][50];
-	int wrongchoice;
-  char quespath[50];
-}data;
+int line; //タグファイルの行数(何もない改行をしない)
+int qes;//出題数
+int num[100]; //ランダム数格納用
+char s[100][30]; //100列分、1列辺り30文字まで
+char last[100][30];
 
 typedef struct Data{
     char question[100];
@@ -123,6 +120,147 @@ data ReadFile(char filepath[]) {
     return x;
 }
 
+void Output(){
+    char str[10];
+	printf("タグを選択してください\n");
+	scanf("%s",str);
+	Select(str);
+	Qopen();
+	//printf("正常終了\n");
+	return 0;
+}//str(適当なタグ名保管変数)にmenu部で格納済みの場合不要
+
+void Select(char str2[10]){ //問題選択
+	//タグファイル開く
+	FILE *ft;
+	int i;
+	char str0[30]={};
+	char str1[] ="tags/";
+	char str3[] =".txt";
+	strcat(str0,str1);
+	//printf("%s\n",str0);
+	strcat(str0,str2);
+	//printf("%s\n",str0);
+	strcat(str0,str3);
+	//printf("%s\n",str0);
+	ft=fopen(str0,"r");
+	line=0; i=0;
+	while(fgets(s[i],20,ft)!=NULL){
+		line++; i++;
+	}
+	fclose(ft);
+	Random();
+}
+
+void Random(){
+	int i,j,x;
+	qes=20;
+	srand((unsigned) time(NULL));
+	if(qes>line) qes=line; //ファイルの総問題数不足時に出題数を揃える。
+	//printf("qes=%d\n",qes);	 
+	for(i=0;i<=30;i++) num[i]=0;
+	for(i=1;i<=qes;i++){
+		do{
+			x=0;
+			num[i]=rand()%line+1; //ランダム関数
+			//printf("%3d",num[i]);
+			for(j=0;j<i;j++){
+				if(num[j]==num[i]){
+					x=1;
+				}
+			}
+		}while(x==1);
+		//printf("\n");
+	}
+}
+
+void Qopen(){ //
+	int i;
+	FILE *fs;
+	for(i=1;i<=qes;i++){
+		ReadFile(s[num[i]-1]);//void ReadFile(char filepath[])参照
+	}
+}
+
+char SpritSpace(char *readline, int mode,data *x) {
+    int cnt = 0;
+    char *ptr;
+
+    ptr = strtok(readline, " ");
+    SpritSpaceMode(ptr, mode, cnt, x);
+    cnt++;
+
+    while (ptr!=NULL) {
+        ptr = strtok(NULL, " ");
+        if (ptr!=NULL) {
+            SpritSpaceMode(ptr, mode, cnt, x);
+            cnt++;
+        }
+    }
+}
+
+data ReadFile(char filepath[]) {
+	data x;
+    FILE *fo;
+    char filename[100];
+    char readline[100] = {'\0'};
+
+	for(int i=0;i<10;i++){
+		x.tag[i][0] = '\0';
+	}
+	for(int i=0;i<4;i++){
+		x.choice[i][0] = '\0';
+	}
+	
+	x.question[0] = '\0';
+	x.modelans[0] = '\0';
+	x.quespath[0] = '\0';
+	x.wrongchoice = 0;
+	
+	
+    memcpy(filename,filepath,strlen(filepath));
+
+    if ((fo = fopen(filename, "r")) == NULL) {
+        fprintf(stderr, "%sのオープンに失敗しました.\n", filename);
+        exit(EXIT_FAILURE);
+    }
+
+	
+
+    /* 1行目の処理 <tag> */
+    fgets(readline, 100, fo);
+    if (strstr(readline, " ")!=NULL) {
+        SpritSpace(RemoveN(readline), 0, &x);
+    }
+    else {
+        strcpy(x.tag[0], RemoveN(readline));
+        //puts(x.tag[0]);
+    }
+
+    /* 2行目の処理 <wrongchoice> */
+    fgets(readline, 100, fo);
+    x.wrongchoice =  atoi(RemoveN(readline));
+    //printf("%d\n", x.wrongchoice);
+
+    /* 3行目の処理 <question> */
+    fgets(readline, 100, fo);
+    strcpy(x.question, RemoveN(readline));
+    //puts(x.question);
+
+    /* 4行目の処理 <choice> */
+    fgets(readline, 100, fo);
+    SpritSpace(RemoveN(readline), 1, &x);
+
+    /* 5行目の処理 <modelans> */
+    fgets(readline, 100, fo);
+    strcpy(x.modelans, RemoveN(readline));
+    //puts(x.modelans);
+
+    fclose(fo);
+    
+    return x;
+}
+
 int InputAnswer(){
 	int ans;
 	char ansc[10];
@@ -138,7 +276,7 @@ int InputAnswer(){
 	}
 }
 
-void Output()
+void Output_ama()
 {
 	/* 動作確認用
 	data x;
@@ -282,6 +420,43 @@ void Menu(){
                 break;
         }
     }
+}
+
+void TagRead(char filepath[],char *tags[]){
+    /*
+        問題テキストファイルからタグ成分を抽出
+        引数のtagsに抽出したタグを格納する
+
+        引数
+        filepath:ファイルのパス　相対パスじゃないと環境が変わるとめんどくさい
+        tags:タグを格納するために持ってくるcharのポインタの配列（実質2次元配列みたいなもの）
+            このやり方を採用してる理由は、C言語の関数は配列を戻り値にできないため
+
+        戻り値　なし
+    */
+	FILE *f;
+    char s[100];
+    if((f = fopen(filepath,"r"))!=NULL){
+        //1行そのまま読み込み sに格納
+        fgets(s,100,f);
+
+        //単語ごとに分割
+        int i=0;
+        tags[i] = strtok(s," ");
+        strcat(tags[i],"");
+        while(tags[i]!=NULL){
+            i++;
+            tags[i] = strtok(NULL," ");
+            strcat(tags[i],"");
+        }
+        //LinuxかWindowsで改行コードが違うので
+        if(tags[i-1][strlen(tags[i-1])-2] == '\r'){
+            tags[i-1][strlen(tags[i-1])-2] = '\0';
+        }else{
+            tags[i-1][strlen(tags[i-1])-1] = '\0';
+        }
+    }
+    fclose(f);
 }
 
 void TagRead(char filepath[],char *tags[]){
