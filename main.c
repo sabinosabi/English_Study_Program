@@ -14,8 +14,113 @@ typedef struct Data{
   char quespath[50];
 }data;
 
-FILE FileRead(char filepath[]){
-    return;
+typedef struct Data{
+    char question[100];
+    char choice[4][50];
+    char modelans[50];
+    char tag[10][50];
+    int wrongchoice;
+    char quespath[50];
+}data;
+
+char *RemoveN(char *readline) {
+    char *result;
+    result = strtok(readline, "\n");
+    return result;
+}
+
+char SpritSpaceMode(char *ptr, int mode, int cnt, data *x){
+    switch (mode) {
+        case 0:
+            strcpy(x->tag[cnt], ptr);
+            //puts(x->tag[cnt]);
+            break;
+        case 1:
+            strcpy(x->choice[cnt], ptr);
+            //puts(x->choice[cnt]);
+            break;
+        default:
+            puts("エラー");
+    }
+}
+
+char SpritSpace(char *readline, int mode,data *x) {
+    int cnt = 0;
+    char *ptr;
+
+    ptr = strtok(readline, " ");
+    SpritSpaceMode(ptr, mode, cnt, x);
+    cnt++;
+
+    while (ptr!=NULL) {
+        ptr = strtok(NULL, " ");
+        if (ptr!=NULL) {
+            SpritSpaceMode(ptr, mode, cnt, x);
+            cnt++;
+        }
+    }
+}
+
+data ReadFile(char filepath[]) {
+	data x;
+    FILE *fo;
+    char filename[100];
+    char readline[100] = {'\0'};
+
+	for(int i=0;i<10;i++){
+		x.tag[i][0] = '\0';
+	}
+	for(int i=0;i<4;i++){
+		x.choice[i][0] = '\0';
+	}
+	
+	x.question[0] = '\0';
+	x.modelans[0] = '\0';
+	x.quespath[0] = '\0';
+	x.wrongchoice = 0;
+	
+	
+    memcpy(filename,filepath,strlen(filepath));
+
+    if ((fo = fopen(filename, "r")) == NULL) {
+        fprintf(stderr, "%sのオープンに失敗しました.\n", filename);
+        exit(EXIT_FAILURE);
+    }
+
+	
+
+    /* 1行目の処理 <tag> */
+    fgets(readline, 100, fo);
+    if (strstr(readline, " ")!=NULL) {
+        SpritSpace(RemoveN(readline), 0, &x);
+    }
+    else {
+        strcpy(x.tag[0], RemoveN(readline));
+        //puts(x.tag[0]);
+    }
+
+    /* 2行目の処理 <wrongchoice> */
+    fgets(readline, 100, fo);
+    x.wrongchoice =  atoi(RemoveN(readline));
+    //printf("%d\n", x.wrongchoice);
+
+    /* 3行目の処理 <question> */
+    fgets(readline, 100, fo);
+    strcpy(x.question, RemoveN(readline));
+    //puts(x.question);
+
+    /* 4行目の処理 <choice> */
+    fgets(readline, 100, fo);
+    SpritSpace(RemoveN(readline), 1, &x);
+
+    /* 5行目の処理 <modelans> */
+    fgets(readline, 100, fo);
+    strcpy(x.modelans, RemoveN(readline));
+    //puts(x.modelans);
+
+    fclose(fo);
+    
+    return x;
 }
 
 int InputAnswer(){
@@ -267,6 +372,28 @@ int main(){
     //strcpy(x.quespath,"questions/qes001.txt");
     //CountWA(x);
     //ManageTag();
+    
+    /* FileReadデバッグ
+    data test;
+    char filepath[] = "questions/qes001.txt";
+    test = ReadFile(filepath);
+    int i=0;
+    while(test.tag[i][0]!='\0'){
+    	printf("%s",test.tag[i]);
+    	i++;
+    }
+    printf("\n");
+    
+    printf("%d\n",test.wrongchoice);
+    
+    printf("%s\n",test.question);
+    
+    for(i=0;i<4;i++){
+    	printf("%s\n",test.choice[i]);
+    }
+    
+    printf("%s\n",test.modelans);
+    */
     Menu();
     return 0;
 }
