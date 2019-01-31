@@ -1,6 +1,18 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<ctype.h>
+#include<stdlib.h>
+#include<time.h>
+
+typedef struct Data{
+	char question[100];
+	char choice[4][50];
+	char modelans[50];
+	char tag[10][50];
+	int wrongchoice;
+  char quespath[50];
+}data;
 
 typedef struct Data{
     char question[100];
@@ -111,16 +123,165 @@ data ReadFile(char filepath[]) {
     return x;
 }
 
-void Output(){
-    return;
+int InputAnswer(){
+	int ans;
+	char ansc[10];
+	while(1){
+		printf("解答 -->");
+		scanf("%s",ansc); // char型で読み込む
+		if (strlen(ansc) == 1) ans = ansc[0] - 48; // 一文字の場合int型に変換する
+		if(ans == 1 || ans == 2 || ans == 3 || ans == 4){
+			return ans;
+		}else{
+			printf("error:正しく入力を行ってください\n");
+		}
+	}
 }
 
-void CheckAnswer(){
-    return;
+void Output()
+{
+	/* 動作確認用
+	data x;
+	strcpy(x.question,"question");
+	strcpy(x.choice[0],"choice1");
+	strcpy(x.choice[1],"choice2");
+	strcpy(x.choice[2],"choice3");
+	strcpy(x.choice[3],"choice4");
+	strcpy(x.modelans,"choice1");
+	x.wrongchoice=5;　*/
+	int a,b,c,d,i,stuck,ans,modelansnum;
+	a=0;
+	b=0;
+	c=0;
+	d=0;
+	i=0;
+	stuck=0;
+	ans=0;
+	modelansnum=0;
+	/* 問題文の出力 */
+	printf("問：%s\n間違えた回数 --> %d\n",x.question,x.wrongchoice);
+	/* 選択肢のランダム化 */
+	srand((unsigned) time(NULL));
+	a=rand()%4;
+	stuck=rand()%4;
+	while(a == stuck){
+		stuck=rand()%4;
+	}
+	b=stuck;
+	stuck=rand()%4;
+	while(a == stuck || b == stuck){
+		stuck=rand()%4;
+	}
+	c=stuck;
+	stuck=rand()%4;
+	while(a == stuck || b == stuck || c == stuck){
+		stuck=rand()%4;
+	}
+	d=stuck;
+	/* 答えの選択肢の判別 */
+	if(strcmp(x.choice[a],x.modelans)==0){
+		modelansnum=1;
+	}else if(strcmp(x.choice[b],x.modelans)==0){
+		modelansnum=2;
+	}else if(strcmp(x.choice[c],x.modelans)==0){
+		modelansnum=3;
+	}else if(strcmp(x.choice[d],x.modelans)==0){
+		modelansnum=4;
+	}else {
+		printf("error:選択肢内に模範解答が存在しません\n");
+	}
+	/* ランダム化した選択肢の出力 */
+	printf("1.%s\n2.%s\n3.%s\n4.%s\n",x.choice[a],x.choice[b],x.choice[c],x.choice[d]);
+	/* 解答の入力受付 */
+	ans=InputAnswer();
+	/* 答え合わせ */
+	printf("模範解答 --> %s\n",x.modelans);
+	if(ans == modelansnum){
+		printf("正解！\n");
+	}else if(ans != modelansnum){
+		printf("不正解...\n");
+	}else{
+		printf("program error\n");
+	}
+}
+
+void CountWA(data wrongdata){
+    /*
+    間違えた問題カウントする部（ファイル書き出し）
+    outputで間違えた際に呼び出されるものと想定
+    引数は間違えた問題の構造体丸ごと
+    */
+    int N = 256; //最大文字数
+    char buf[N]; //fgetsで一時的に保存しておく領域
+    FILE *f,*fb;
+    f = fopen(wrongdata.quespath,"r");//rモードで問題を開く
+    fb = fopen("backup.txt","w");//wモードで別ファイルを開く　ここに問題の内容を一回書き写しながら誤答回数を変える
+    int wc;//誤答回数おきば
+    for(int i=0;i<6;i++){
+        if(i!=1){//誤答回数の行以外は1行読み取り→1行書き出し
+            fgets(buf,N,f);
+            fputs(buf,fb);
+        }else{//誤答回数の行になったら
+            fscanf(f,"%d",&wc);//整数型で誤答回数を取得
+            printf("%d\n",wc);
+            wc++;//誤答回数増やす
+            char wcstr[11];//誤答回数を文字列に変換するための配列
+            snprintf(wcstr,11,"%d",wc);//誤答回数を文字列に変換
+            fputs(wcstr,fb);//1行書き出し
+        }
+    }
+    remove(wrongdata.quespath);
+    rename("backup.txt",wrongdata.quespath);
+    fclose(f);
+    fclose(fb);
 }
 
 void Menu(){
-    return;
+    int n,flag1=1,flag2=1, FLAG=1;
+    char buf[32];
+    while(flag2==1){
+        flag1=1;
+        puts("\n学習方法を数字で選択してください。");
+        puts("--------------------------------------");
+        puts(" 1 | ジャンルを絞って問題を出題\n");
+        puts(" 2 | ランダムに問題を出題\n");
+        puts(" 0 | プログラムを終了する。");
+        puts("--------------------------------------\n");
+        scanf("%s",buf);
+        while(flag1==1) {
+            FLAG=1;
+            for(int i=0; i<strlen(buf); i++){
+                if(isdigit(buf[i]) == 0) {
+                    FLAG = 0;
+                }
+            }
+            if(FLAG == 0){
+                printf("0〜2の一桁の数字で入力してください。\n");
+                scanf("%s", buf);
+                flag1=1;
+            }else{
+                n = atoi(buf);
+                flag1=0;
+            }
+        }
+        switch(n){
+            case 1:
+                puts("success!\n");
+                flag2=1;
+                break;
+                case 2:
+                puts("ええかんでぃ\n");
+                flag2=1;
+                break;
+            case 0:
+                puts("お疲れ様でした。\n");
+                flag2=0;
+                break;
+            default:
+                puts("もう一度入力してください。\n");
+                break;
+        }
+    }
 }
 
 void TagRead(char filepath[],char *tags[]){
@@ -207,6 +368,9 @@ void CreateProblem(){
 }
 
 int main(){
+    //data x;
+    //strcpy(x.quespath,"questions/qes001.txt");
+    //CountWA(x);
     //ManageTag();
     
     /* FileReadデバッグ
@@ -230,7 +394,6 @@ int main(){
     
     printf("%s\n",test.modelans);
     */
-    
-    
+    Menu();
     return 0;
 }
