@@ -3,6 +3,7 @@
 #include<string.h>
 #include<ctype.h>
 #include<time.h>
+#include<dirent.h>
 
 typedef struct Data{
 	char question[100];
@@ -378,7 +379,25 @@ void TagRead(char filepath[],char *tags[]){
 	fclose(f);
 }
 
+void DeleteTagFiles(){
+	//Tagsディレクトリの中身を一掃する関数
+	//Tagsディレクトリ内にTag名ファイルを生成する前に消すためのもの
 
+	DIR *dp;
+	struct dirent* entry;
+
+	dp = opendir("./tags/");
+	do{
+		entry = readdir(dp);
+		if(entry != NULL){
+			if(strcmp(entry->d_name,".") != 0 && strcmp(entry->d_name,"..") != 0){
+				char tpath[50]; //タグファイルパス
+				sprintf(tpath,"tags/%s",entry->d_name);
+				remove(tpath);
+			}
+		}
+	}while(entry != NULL);
+}
 
 void ManageTag(){
 	/*
@@ -391,6 +410,9 @@ void ManageTag(){
 	int num=1; //問題番号
 	FILE *f;
 	char qpath[30]; //問題のファイルパス
+
+	//はじめに、タグファイルを一旦全部消す
+	DeleteTagFiles();
 	//ファイルパス作成
 	sprintf(qpath,"questions/qes%03d.txt",num);
 	//もし（まだ）問題ファイルが存在するなら
