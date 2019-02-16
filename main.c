@@ -152,7 +152,7 @@ void CountWA(data wrongdata){
 			fputs(buf,fb);
 		}else{//誤答回数の行になったら
 			fscanf(f,"%d",&wc);//整数型で誤答回数を取得
-			printf("%d\n",wc);
+			//printf("%d\n",wc);
 			wc++;//誤答回数増やす
 			char wcstr[11];//誤答回数を文字列に変換するための配列
 			snprintf(wcstr,11,"%d",wc);//誤答回数を文字列に変換
@@ -242,7 +242,7 @@ data Qopen(int qes,char s[][30],int* num){
 		char str0[] ="questions/";
 		strcat(qespath,str0);
 		strcat(qespath,s[num[i]-1]);
-		printf("%s\n",qespath);
+		//printf("%s\n",qespath);
 		p[i]=ReadFile(qespath);
 		Question(p[i]);
 	}
@@ -287,7 +287,7 @@ void Select(char str2[10], int* line, char s[][30], int* qes,int* num){
 		}else{
 			s[i][strlen(s[i])-1] = '\0';
 		}
-		printf("%s",s[i]);
+		//printf("%s",s[i]);
 		i++;
 	}
 	fclose(ft);
@@ -312,9 +312,11 @@ void Output(int frag){
 		strcpy(str,"All");//全問題のファイルはAll.txtとする
 	}
 	Select(str,&line,s,&qes,num);
+	/*
 	for(int i=0;i<=30;i++){
 		printf("%d\n",num[i]);
 	}
+	*/
 	/*
 	for(int i=0;i<10;i++){
 		printf("%s\n",s[i]);
