@@ -71,7 +71,9 @@ data ReadFile(char filepath[]) {
 	x.wrongchoice = 0;
 
 
-	memcpy(filename,filepath,strlen(filepath));
+	//memcpy(filename,filepath,strlen(filepath));
+	strcpy(filename,filepath);
+
 
 	if ((fo = fopen(filename, "r")) == NULL) {
 		fprintf(stderr, "%sのオープンに失敗しました.\n", filename);
@@ -108,6 +110,9 @@ data ReadFile(char filepath[]) {
 	fgets(readline, 100, fo);
 	strcpy(x.modelans, RemoveN(readline));
 	//puts(x.modelans);
+
+	/* quespathを代入 */
+	strcpy(x.quespath,filename);
 
 	fclose(fo);
 	return x;
@@ -147,7 +152,7 @@ void CountWA(data wrongdata){
 			fputs(buf,fb);
 		}else{//誤答回数の行になったら
 			fscanf(f,"%d",&wc);//整数型で誤答回数を取得
-			printf("%d\n",wc);
+			//printf("%d\n",wc);
 			wc++;//誤答回数増やす
 			char wcstr[11];//誤答回数を文字列に変換するための配列
 			snprintf(wcstr,11,"%d",wc);//誤答回数を文字列に変換
@@ -232,9 +237,14 @@ void Question(data x)
 data Qopen(int qes,char s[][30],int* num){
 	int i;
 	data p[qes];
-	for(i=1;i<=qes;i++){
-		p[i-1]=ReadFile(s[num[i]-1]);
-		Question(p[i-1]);
+	for(i=0;i<qes;i++){
+		char qespath[30]={};
+		char str0[] ="questions/";
+		strcat(qespath,str0);
+		strcat(qespath,s[num[i]-1]);
+		//printf("%s\n",qespath);
+		p[i]=ReadFile(qespath);
+		Question(p[i]);
 	}
 }
 
@@ -244,10 +254,10 @@ void Random(int* line,int* qes,int* num){
 	srand((unsigned) time(NULL));
 	if(*qes>*line) *qes=*line; //ファイルの総問題数不足時に出題数を揃える
 	for(i=0;i<=30;i++) num[i]=0;
-	for(i=1;i<=*qes;i++){
+	for(i=0;i<(*qes);i++){
 		do{
 			x=0;
-			num[i]=rand()%*line+1; //ランダム関数
+			num[i]=rand()%(*line)+1; //ランダム関数
 			for(j=0;j<i;j++){
 				if(num[j]==num[i]){
 					x=1;
@@ -268,21 +278,33 @@ void Select(char str2[10], int* line, char s[][30], int* qes,int* num){
 	strcat(str0,str2);
 	strcat(str0,str3);
 	ft=fopen(str0,"r");
-	line=0; i=0;
+	*line=0; i=0;
 	while(fgets(s[i],20,ft)!=NULL){
-		line++; i++;
+		(*line)++;
+		//改行消し
+		if(s[i][strlen(s[i])-2] == '\r'){
+			s[i][strlen(s[i])-2] = '\0';
+		}else{
+			s[i][strlen(s[i])-1] = '\0';
+		}
+		//printf("%s",s[i]);
+		i++;
 	}
-	printf("あああ\n");
 	fclose(ft);
 	Random(line,qes,num);
 }
 
 void Output(int frag){
-	int line; //タグファイルの行数(何もない改行をしない)
-	int qes;//出題数
-	int num[100]; //ランダム数格納用
+	int line=0; //タグファイルの行数(何もない改行をしない)
+	int qes=0;//出題数
+	int num[100]={0}; //ランダム数格納用
 	char s[100][30]; //100列分、1列辺り30文字まで
-	char str[10];
+	char str[10]={};
+
+	for(int i=0;i<100;i++){
+		s[i][0]='\0';
+	}
+
 	if(frag==1){
 		printf("タグを選択してください\n");
 			scanf("%s",str);
@@ -290,6 +312,16 @@ void Output(int frag){
 		strcpy(str,"All");//全問題のファイルはAll.txtとする
 	}
 	Select(str,&line,s,&qes,num);
+	/*
+	for(int i=0;i<=30;i++){
+		printf("%d\n",num[i]);
+	}
+	*/
+	/*
+	for(int i=0;i<10;i++){
+		printf("%s\n",s[i]);
+	}
+	*/
 	Qopen(qes,s,num);
 }//str(適当なタグ名保管変数)にmenu部で格納済みの場合不要
 
@@ -328,7 +360,7 @@ void Menu(){
 				flag2=1;
 				break;
 			case 2:
-				puts("ええかんでぃ\n");
+				//puts("ええかんでぃ\n");
 				Output(0);
 				flag2=1;
 				break;
@@ -365,9 +397,9 @@ void TagRead(char filepath[],char *tags[]){
 		tags[i] = strtok(s," ");
 		strcat(tags[i],"");
 		while(tags[i]!=NULL){
-		i++;
-		tags[i] = strtok(NULL," ");
-		strcat(tags[i],"");
+			i++;
+			tags[i] = strtok(NULL," ");
+			strcat(tags[i],"");
 		}
 		//LinuxかWindowsで改行コードが違うので
 		if(tags[i-1][strlen(tags[i-1])-2] == '\r'){
