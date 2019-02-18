@@ -111,6 +111,11 @@ data ReadFile(char filepath[]) {
 	strcpy(x.modelans, RemoveN(readline));
 	//puts(x.modelans);
 
+	//modelansのキャリッジリターン消し
+	if(x.modelans[strlen(x.modelans)-1] == '\r'){
+		x.modelans[strlen(x.modelans)-1] = '\0';
+	}
+
 	/* quespathを代入 */
 	strcpy(x.quespath,filename);
 
