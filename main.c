@@ -431,6 +431,17 @@ void DeleteTagFiles(){
 	}while(entry != NULL);
 }
 
+void CreateAllTagFile(char qpath[30]){
+	/*
+	「All.txt」というタグファイルを作成する関数
+	*/
+	FILE *f;
+
+	f = fopen("tags/All.txt","a");
+	fprintf(f,"%s\n",&qpath[10]);
+	fclose(f);
+}
+
 void ManageTag(){
 	/*
 	ManageTag()と呼び出すだけで以下のことを行います
@@ -452,6 +463,7 @@ void ManageTag(){
 	while((f = fopen(qpath,"r"))!=NULL){
 		//一旦問題のファイルを閉じる
 		fclose(f);
+		CreateAllTagFile(qpath);
 		char *tagsp[10]; //ポインタの配列
 		TagRead(qpath,tagsp);
 		int i=0;
@@ -477,10 +489,6 @@ void ManageTag(){
 		sprintf(qpath,"questions/qes%03d.txt",num);
 	}
 	//無いならTag取得終了
-}
-
-void CreateProblem(){
-	return;
 }
 
 int main(){
