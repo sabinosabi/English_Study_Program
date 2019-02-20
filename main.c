@@ -76,7 +76,7 @@ data ReadFile(char filepath[]) {
 
 
 	if ((fo = fopen(filename, "r")) == NULL) {
-		fprintf(stderr, "%sのオープンに失敗しました.\n", filename);
+		fprintf(stderr, "error:%sのオープンに失敗しました。\n", filename);
 		exit(EXIT_FAILURE);
 	}
 
@@ -171,7 +171,7 @@ void CountWA(data wrongdata){
 }
 
 
-void Question(data x)
+int Question(data x,int k)
 {
 	/* 動作確認用
 	data x;
@@ -192,7 +192,8 @@ void Question(data x)
 	ans=0;
 	modelansnum=0;
 	/* 問題文の出力 */
-	printf("問：%s\n間違えた回数 --> %d\n",x.question,x.wrongchoice);
+	printf("\n");
+	printf("問%d：%s\n間違えた回数 --> %d\n",k,x.question,x.wrongchoice);
 	/* 選択肢のランダム化 */
 	srand((unsigned) time(NULL));
 	a=rand()%4;
@@ -231,16 +232,20 @@ void Question(data x)
 	printf("模範解答 --> %s\n",x.modelans);
 	if(ans == modelansnum){
 		printf("正解！\n");
+		return 1;
 	}else if(ans != modelansnum){
 		printf("不正解...\n");
 		CountWA(x);
+		return 0;
 	}else{
 		printf("program error\n");
+		return 2;
 	}
 }
 
 data Qopen(int qes,char s[][30],int* num){
-	int i;
+	int i,H;
+	int good=0, bad=0; //正解数、不正解数確認用
 	data p[qes];
 	for(i=0;i<qes;i++){
 		char qespath[30]={};
@@ -249,8 +254,24 @@ data Qopen(int qes,char s[][30],int* num){
 		strcat(qespath,s[num[i]-1]);
 		//printf("%s\n",qespath);
 		p[i]=ReadFile(qespath);
-		Question(p[i]);
+		H=Question(p[i],i+1);
+		if(H==1){
+			good++;
+		}else if(H==0){
+			bad++;
+		}
 	}
+	printf("\n問題数:%d  正解数:%d  不正解数:%d\n",qes,good,bad);
+	if((float)good/qes>=0.8){
+		printf("評価:◎\n");
+	}else if((float)good/qes>=0.5){
+		printf("評価:○\n");
+	}else if((float)good/qes>=0.2){
+		printf("評価:△\n");
+	}else {
+		printf("評価:×\n");
+	}//なんとなく評価値
+	printf("\n");
 }
 
 void Random(int* line,int* qes,int* num){
@@ -282,7 +303,13 @@ void Select(char str2[10], int* line, char s[][30], int* qes,int* num){
 	strcat(str0,str1);
 	strcat(str0,str2);
 	strcat(str0,str3);
-	ft=fopen(str0,"r");
+
+	
+	if ((ft=fopen(str0,"r")) == NULL) {
+		fprintf(stderr, "%sというタグは存在しません。\n", str2);
+		return;
+	}
+
 	*line=0; i=0;
 	while(fgets(s[i],20,ft)!=NULL){
 		(*line)++;
@@ -312,7 +339,7 @@ void Output(int frag){
 
 	if(frag==1){
 		printf("タグを選択してください\n");
-			scanf("%s",str);
+		scanf("%s",str);
 	}else{
 		strcpy(str,"All");//全問題のファイルはAll.txtとする
 	}
@@ -374,7 +401,7 @@ void Menu(){
 				flag2=0;
 				break;
 			default:
-				puts("もう一度入力してください。\n");
+				puts("0〜2の一桁の数字で入力してください。\n");
 				break;
 		}
 	}
