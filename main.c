@@ -3,6 +3,7 @@
 #include<string.h>
 #include<ctype.h>
 #include<time.h>
+#include<dirent.h>
 
 typedef struct Data{
 	char question[100];
@@ -63,21 +64,23 @@ data ReadFile(char filepath[]) {
 	for(int i=0;i<4;i++){
 		x.choice[i][0] = '\0';
 	}
-	
+
 	x.question[0] = '\0';
 	x.modelans[0] = '\0';
 	x.quespath[0] = '\0';
 	x.wrongchoice = 0;
-	
-	
-	memcpy(filename,filepath,strlen(filepath));
+
+
+	//memcpy(filename,filepath,strlen(filepath));
+	strcpy(filename,filepath);
+
 
 	if ((fo = fopen(filename, "r")) == NULL) {
-		fprintf(stderr, "%sのオープンに失敗しました.\n", filename);
+		fprintf(stderr, "error:%sのオープンに失敗しました。\n", filename);
 		exit(EXIT_FAILURE);
 	}
 
-	
+
 
 	/* 1行目の処理 <tag> */
 	fgets(readline, 100, fo);
@@ -108,146 +111,18 @@ data ReadFile(char filepath[]) {
 	strcpy(x.modelans, RemoveN(readline));
 	//puts(x.modelans);
 
+	//modelansのキャリッジリターン消し
+	if(x.modelans[strlen(x.modelans)-1] == '\r'){
+		x.modelans[strlen(x.modelans)-1] = '\0';
+	}
+
+	/* quespathを代入 */
+	strcpy(x.quespath,filename);
+
 	fclose(fo);
 	return x;
 }
 
-void Output(int frag){
-	int line; //タグファイルの行数(何もない改行をしない)
-	int qes;//出題数
-	int num[100]; //ランダム数格納用
-	char s[100][30]; //100列分、1列辺り30文字まで
-	char str[10];
-	if(frag==1){
-		printf("タグを選択してください\n");
-			scanf("%s",str);
-	}else{
-		strcpy(str,"All");//全問題のファイルはAll.txtとする
-	}
-	Select(str);
-	Qopen();
-}//str(適当なタグ名保管変数)にmenu部で格納済みの場合不要
-
-void Select(char str2[10]){
-	/* タグファイル選択 */
-	FILE *ft;
-	int i;
-	char str0[30]={};
-	char str1[] ="tags/";
-	char str3[] =".txt";
-	strcat(str0,str1);
-	strcat(str0,str2);
-	strcat(str0,str3);
-	ft=fopen(str0,"r");
-	line=0; i=0;
-	while(fgets(s[i],20,ft)!=NULL){
-		line++; i++;
-	}
-	fclose(ft);
-	Random();
-}
-
-void Random(){
-	int i,j,x;
-	qes=20;
-	srand((unsigned) time(NULL));
-	if(qes>line) qes=line; //ファイルの総問題数不足時に出題数を揃える 
-	for(i=0;i<=30;i++) num[i]=0;
-	for(i=1;i<=qes;i++){
-		do{
-			x=0;
-			num[i]=rand()%line+1; //ランダム関数
-			for(j=0;j<i;j++){
-				if(num[j]==num[i]){
-					x=1;
-				}
-			}
-		}while(x==1);
-	}
-}
-
-data Qopen(){
-	int i;
-	data p;
-	for(i=1;i<=qes;i++){
-		p[i-1]=ReadFile(s[num[i]-1]);
-		Question(p[i-1]);
-	}
-}
-
-char SpritSpace(char *readline, int mode,data *x) {
-	int cnt = 0;
-	char *ptr;
-
-	ptr = strtok(readline, " ");
-	SpritSpaceMode(ptr, mode, cnt, x);
-	cnt++;
-
-	while (ptr!=NULL) {
-		ptr = strtok(NULL, " ");
-		if (ptr!=NULL) {
-			SpritSpaceMode(ptr, mode, cnt, x);
-			cnt++;
-		}
-	}
-}
-
-data ReadFile(char filepath[]) {
-	data x;
-	FILE *fo;
-	char filename[100];
-	char readline[100] = {'\0'};
-
-	for(int i=0;i<10;i++){
-		x.tag[i][0] = '\0';
-	}
-	for(int i=0;i<4;i++){
-		x.choice[i][0] = '\0';
-	}
-	
-	x.question[0] = '\0';
-	x.modelans[0] = '\0';
-	x.quespath[0] = '\0';
-	x.wrongchoice = 0;
-
-	memcpy(filename,filepath,strlen(filepath));
-
-	if ((fo = fopen(filename, "r")) == NULL) {
-		fprintf(stderr, "%sのオープンに失敗しました.\n", filename);
-		exit(EXIT_FAILURE);
-	}
-
-	/* 1行目の処理 <tag> */
-	fgets(readline, 100, fo);
-	if (strstr(readline, " ")!=NULL) {
-		SpritSpace(RemoveN(readline), 0, &x);
-	}else{
-		strcpy(x.tag[0], RemoveN(readline));
-		//puts(x.tag[0]);
-	}
-
-	/* 2行目の処理 <wrongchoice> */ 
-	fgets(readline, 100, fo);
-	x.wrongchoice =  atoi(RemoveN(readline));
-	//printf("%d\n", x.wrongchoice);
-
-	/* 3行目の処理 <question> */
-	fgets(readline, 100, fo);
-	strcpy(x.question, RemoveN(readline));
-	//puts(x.question);
-
-	/* 4行目の処理 <choice> */
-	fgets(readline, 100, fo);
-	SpritSpace(RemoveN(readline), 1, &x);
-
-	/* 5行目の処理 <modelans> */
-	fgets(readline, 100, fo);
-	strcpy(x.modelans, RemoveN(readline));
-	//puts(x.modelans);
-
-	fclose(fo);
-	return x;
-}
 
 int InputAnswer(){
 	int ans;
@@ -264,7 +139,39 @@ int InputAnswer(){
 	}
 }
 
-void Question(data x)
+void CountWA(data wrongdata){
+	/*
+	間違えた問題カウントする部（ファイル書き出し）
+	outputで間違えた際に呼び出されるものと想定
+	引数は間違えた問題の構造体丸ごと
+	*/
+	int N = 256; //最大文字数
+	char buf[N]; //fgetsで一時的に保存しておく領域
+	FILE *f,*fb;
+	f = fopen(wrongdata.quespath,"r");//rモードで問題を開く
+	fb = fopen("backup.txt","w");//wモードで別ファイルを開く　ここに問題の内容を一回書き写しながら誤答回数を変える
+	int wc;//誤答回数おきば
+	for(int i=0;i<6;i++){
+		if(i!=1){//誤答回数の行以外は1行読み取り→1行書き出し
+			fgets(buf,N,f);
+			fputs(buf,fb);
+		}else{//誤答回数の行になったら
+			fscanf(f,"%d",&wc);//整数型で誤答回数を取得
+			//printf("%d\n",wc);
+			wc++;//誤答回数増やす
+			char wcstr[11];//誤答回数を文字列に変換するための配列
+			snprintf(wcstr,11,"%d",wc);//誤答回数を文字列に変換
+			fputs(wcstr,fb);//1行書き出し
+		}
+	}
+	remove(wrongdata.quespath);
+	rename("backup.txt",wrongdata.quespath);
+	fclose(f);
+	fclose(fb);
+}
+
+
+int Question(data x,int k)
 {
 	/* 動作確認用
 	data x;
@@ -285,7 +192,8 @@ void Question(data x)
 	ans=0;
 	modelansnum=0;
 	/* 問題文の出力 */
-	printf("問：%s\n間違えた回数 --> %d\n",x.question,x.wrongchoice);
+	printf("\n");
+	printf("問%d：%s\n間違えた回数 --> %d\n",k,x.question,x.wrongchoice);
 	/* 選択肢のランダム化 */
 	srand((unsigned) time(NULL));
 	a=rand()%4;
@@ -324,43 +232,130 @@ void Question(data x)
 	printf("模範解答 --> %s\n",x.modelans);
 	if(ans == modelansnum){
 		printf("正解！\n");
+		return 1;
 	}else if(ans != modelansnum){
 		printf("不正解...\n");
+		CountWA(x);
+		return 0;
 	}else{
 		printf("program error\n");
+		return 2;
 	}
 }
 
-void CountWA(data wrongdata){
-	/*
-	間違えた問題カウントする部（ファイル書き出し）
-	outputで間違えた際に呼び出されるものと想定
-	引数は間違えた問題の構造体丸ごと
-	*/
-	int N = 256; //最大文字数
-	char buf[N]; //fgetsで一時的に保存しておく領域
-	FILE *f,*fb;
-	f = fopen(wrongdata.quespath,"r");//rモードで問題を開く
-	fb = fopen("backup.txt","w");//wモードで別ファイルを開く　ここに問題の内容を一回書き写しながら誤答回数を変える
-	int wc;//誤答回数おきば
-	for(int i=0;i<6;i++){
-		if(i!=1){//誤答回数の行以外は1行読み取り→1行書き出し
-			fgets(buf,N,f);
-			fputs(buf,fb);
-		}else{//誤答回数の行になったら
-			fscanf(f,"%d",&wc);//整数型で誤答回数を取得
-			printf("%d\n",wc);
-			wc++;//誤答回数増やす
-			char wcstr[11];//誤答回数を文字列に変換するための配列
-			snprintf(wcstr,11,"%d",wc);//誤答回数を文字列に変換
-			fputs(wcstr,fb);//1行書き出し
+data Qopen(int qes,char s[][30],int* num){
+	int i,H;
+	int good=0, bad=0; //正解数、不正解数確認用
+	data p[qes];
+	for(i=0;i<qes;i++){
+		char qespath[30]={};
+		char str0[] ="questions/";
+		strcat(qespath,str0);
+		strcat(qespath,s[num[i]-1]);
+		//printf("%s\n",qespath);
+		p[i]=ReadFile(qespath);
+		H=Question(p[i],i+1);
+		if(H==1){
+			good++;
+		}else if(H==0){
+			bad++;
 		}
 	}
-	remove(wrongdata.quespath);
-	rename("backup.txt",wrongdata.quespath);
-	fclose(f);
-	fclose(fb);
+	printf("\n問題数:%d  正解数:%d  不正解数:%d\n",qes,good,bad);
+	if((float)good/qes>=0.8){
+		printf("評価:◎\n");
+	}else if((float)good/qes>=0.5){
+		printf("評価:○\n");
+	}else if((float)good/qes>=0.2){
+		printf("評価:△\n");
+	}else {
+		printf("評価:×\n");
+	}//なんとなく評価値
+	printf("\n");
 }
+
+void Random(int* line,int* qes,int* num){
+	int i,j,x;
+	*qes=20;
+	srand((unsigned) time(NULL));
+	if(*qes>*line) *qes=*line; //ファイルの総問題数不足時に出題数を揃える
+	for(i=0;i<=30;i++) num[i]=0;
+	for(i=0;i<(*qes);i++){
+		do{
+			x=0;
+			num[i]=rand()%(*line)+1; //ランダム関数
+			for(j=0;j<i;j++){
+				if(num[j]==num[i]){
+					x=1;
+				}
+			}
+		}while(x==1);
+	}
+}
+
+void Select(char str2[10], int* line, char s[][30], int* qes,int* num){
+	/* タグファイル選択 */
+	FILE *ft;
+	int i;
+	char str0[30]={};
+	char str1[] ="tags/";
+	char str3[] =".txt";
+	strcat(str0,str1);
+	strcat(str0,str2);
+	strcat(str0,str3);
+
+	
+	if ((ft=fopen(str0,"r")) == NULL) {
+		fprintf(stderr, "%sというタグは存在しません。\n", str2);
+		return;
+	}
+
+	*line=0; i=0;
+	while(fgets(s[i],20,ft)!=NULL){
+		(*line)++;
+		//改行消し
+		if(s[i][strlen(s[i])-2] == '\r'){
+			s[i][strlen(s[i])-2] = '\0';
+		}else{
+			s[i][strlen(s[i])-1] = '\0';
+		}
+		//printf("%s",s[i]);
+		i++;
+	}
+	fclose(ft);
+	Random(line,qes,num);
+}
+
+void Output(int frag){
+	int line=0; //タグファイルの行数(何もない改行をしない)
+	int qes=0;//出題数
+	int num[100]={0}; //ランダム数格納用
+	char s[100][30]; //100列分、1列辺り30文字まで
+	char str[10]={};
+
+	for(int i=0;i<100;i++){
+		s[i][0]='\0';
+	}
+
+	if(frag==1){
+		printf("タグを選択してください\n");
+		scanf("%s",str);
+	}else{
+		strcpy(str,"All");//全問題のファイルはAll.txtとする
+	}
+	Select(str,&line,s,&qes,num);
+	/*
+	for(int i=0;i<=30;i++){
+		printf("%d\n",num[i]);
+	}
+	*/
+	/*
+	for(int i=0;i<10;i++){
+		printf("%s\n",s[i]);
+	}
+	*/
+	Qopen(qes,s,num);
+}//str(適当なタグ名保管変数)にmenu部で格納済みの場合不要
 
 void Menu(){
 	int n,flag1=1,flag2=1, FLAG=1;
@@ -406,7 +401,7 @@ void Menu(){
 				flag2=0;
 				break;
 			default:
-				puts("もう一度入力してください。\n");
+				puts("0〜2の一桁の数字で入力してください。\n");
 				break;
 		}
 	}
@@ -434,9 +429,9 @@ void TagRead(char filepath[],char *tags[]){
 		tags[i] = strtok(s," ");
 		strcat(tags[i],"");
 		while(tags[i]!=NULL){
-		i++;
-		tags[i] = strtok(NULL," ");
-		strcat(tags[i],"");
+			i++;
+			tags[i] = strtok(NULL," ");
+			strcat(tags[i],"");
 		}
 		//LinuxかWindowsで改行コードが違うので
 		if(tags[i-1][strlen(tags[i-1])-2] == '\r'){
@@ -448,7 +443,36 @@ void TagRead(char filepath[],char *tags[]){
 	fclose(f);
 }
 
+void DeleteTagFiles(){
+	//Tagsディレクトリの中身を一掃する関数
+	//Tagsディレクトリ内にTag名ファイルを生成する前に消すためのもの
 
+	DIR *dp;
+	struct dirent* entry;
+
+	dp = opendir("./tags/");
+	do{
+		entry = readdir(dp);
+		if(entry != NULL){
+			if(strcmp(entry->d_name,".") != 0 && strcmp(entry->d_name,"..") != 0){
+				char tpath[50]; //タグファイルパス
+				sprintf(tpath,"tags/%s",entry->d_name);
+				remove(tpath);
+			}
+		}
+	}while(entry != NULL);
+}
+
+void CreateAllTagFile(char qpath[30]){
+	/*
+	「All.txt」というタグファイルを作成する関数
+	*/
+	FILE *f;
+
+	f = fopen("tags/All.txt","a");
+	fprintf(f,"%s\n",&qpath[10]);
+	fclose(f);
+}
 
 void ManageTag(){
 	/*
@@ -461,6 +485,9 @@ void ManageTag(){
 	int num=1; //問題番号
 	FILE *f;
 	char qpath[30]; //問題のファイルパス
+
+	//はじめに、タグファイルを一旦全部消す
+	DeleteTagFiles();
 	//ファイルパス作成
 	sprintf(qpath,"questions/qes%03d.txt",num);
 	//もし（まだ）問題ファイルが存在するなら
@@ -468,6 +495,7 @@ void ManageTag(){
 	while((f = fopen(qpath,"r"))!=NULL){
 		//一旦問題のファイルを閉じる
 		fclose(f);
+		CreateAllTagFile(qpath);
 		char *tagsp[10]; //ポインタの配列
 		TagRead(qpath,tagsp);
 		int i=0;
@@ -495,10 +523,6 @@ void ManageTag(){
 	//無いならTag取得終了
 }
 
-void CreateProblem(){
-	return;
-}
-
 int main(){
 	//data x;
 	//strcpy(x.quespath,"questions/qes001.txt");
@@ -519,12 +543,13 @@ int main(){
 	printf("%d\n",test.wrongchoice);
 
 	printf("%s\n",test.question);
-    
+
 	for(i=0;i<4;i++){
 		printf("%s\n",test.choice[i]);
 	}
 
 	printf("%s\n",test.modelans); */
+	ManageTag();
 	Menu();
 	return 0;
 }
