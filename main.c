@@ -453,21 +453,23 @@ tags:タグを格納するために持ってくるcharのポインタの配列
 void DeleteTagFiles(){
     //Tagsディレクトリの中身を一掃する関数
     //Tagsディレクトリ内にTag名ファイルを生成する前に消すためのもの
-
-    DIR *dp;
-    struct dirent* entry;
-
-    dp = opendir("./tags/");
-    do{
-        entry = readdir(dp);
-        if(entry != NULL){
-            if(strcmp(entry->d_name,".") != 0 && strcmp(entry->d_name,"..") != 0){
-                char tpath[50]; //タグファイルパス
-                sprintf(tpath,"tags/%s",entry->d_name);
-                remove(tpath);
-            }
+    struct dirent **dir_list;
+    int dir_num = scandir("tags/", &dir_list, NULL, alphasort);
+    if (dir_num < 0){
+        return;
+    }
+    while (dir_num--) {
+        if(dir_list[dir_num]->d_type!=DT_REG){
+            continue;
         }
-    }while(entry != NULL);
+        char* tpath;
+        asprintf(&tpath,"tags/%s",dir_list[dir_num]->d_name);
+        remove(tpath);
+        free(tpath);
+
+        free(dir_list[dir_num]);
+    }
+    free(dir_list);
 }
 
 void CreateAllTagFile(char qpath[30]){
