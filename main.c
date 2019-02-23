@@ -363,52 +363,29 @@ void Output(int frag){
 }//str(適当なタグ名保管変数)にmenu部で格納済みの場合不要
 
 void Menu(){
-    int n,flag1=1,flag2=1, FLAG=1;
-    char buf[32];
-    while(flag2==1){
-        flag1=1;
+    while(1){
         puts("\n学習方法を数字で選択してください。");
         puts("--------------------------------------");
         puts(" 1 | ジャンルを絞って問題を出題\n");
         puts(" 2 | ランダムに問題を出題\n");
         puts(" 0 | プログラムを終了する。");
         puts("--------------------------------------\n");
-        scanf("%s",buf);
-        while(flag1==1) {
-            FLAG=1;
-            for(int i=0; i<strlen(buf); i++){
-                if(isdigit(buf[i]) == 0) {
-                    FLAG = 0;
-                }
-            }
-            if(FLAG == 0){
-                printf("0〜2の一桁の数字で入力してください。\n");
-                scanf("%s", buf);
-                flag1=1;
-            }else{
-                n = atoi(buf);
-                flag1=0;
-            }
+
+        char* buf;
+        scanf("%ms",&buf);
+        if(strcmp(buf,"1")==0){
+            //puts("success!\n");
+            Output(1);
+        }else if(strcmp(buf,"2")==0){
+            //puts("ええかんでぃ\n");
+            Output(0);
+        }else if(strcmp(buf,"0")==0){
+            puts("お疲れ様でした。\n");
+            return;
+        }else{
+            puts("0〜2の一桁の数字で入力してください。\n");
         }
-        switch(n){
-            case 1:
-                //puts("success!\n");
-                Output(1);
-                flag2=1;
-                break;
-            case 2:
-                //puts("ええかんでぃ\n");
-                Output(0);
-                flag2=1;
-                break;
-            case 0:
-                puts("お疲れ様でした。\n");
-                flag2=0;
-                break;
-            default:
-                puts("0〜2の一桁の数字で入力してください。\n");
-                break;
-        }
+        free(buf);
     }
 }
 
