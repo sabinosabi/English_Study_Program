@@ -4,6 +4,7 @@
 #include<ctype.h>
 #include<time.h>
 #include<dirent.h>
+#include<stdbool.h>
 
 typedef struct Data{
     char question[100];
@@ -298,25 +299,22 @@ void Random(int* line,int* qes,int* num){
     }
 }
 
-void Select(char str2[10], int* line, char s[][30], int* qes,int* num){
+void Select(char tagname[10], int* line, char* s[100], int* qes,int* num){
     /* タグファイル選択 */
-    FILE *ft;
-    int i;
-    char str0[30]={};
-    char str1[] ="tags/";
-    char str3[] =".txt";
-    strcat(str0,str1);
-    strcat(str0,str2);
-    strcat(str0,str3);
-
-
-    if ((ft=fopen(str0,"r")) == NULL) {
-        fprintf(stderr, "%sというタグは存在しません。\n", str2);
+    char* path;
+    asprintf(&path,"tags/%s.txt",tagname);
+    FILE *ft=fopen(path,"r");
+    free(path);
+    if (ft == NULL) {
+        fprintf(stderr, "%sというタグは存在しません。\n", tagname);
         return;
     }
 
-    *line=0; i=0;
-    while(fgets(s[i],20,ft)!=NULL){
+    *line=0; 
+    int i=0;
+    s[i]=NULL;
+    size_t s_i_size=0;
+    while(getline(&s[i],&s_i_size,ft)!=-1){
         (*line)++;
         //改行消し
         if(s[i][strlen(s[i])-2] == '\r'){
@@ -324,29 +322,28 @@ void Select(char str2[10], int* line, char s[][30], int* qes,int* num){
         }else{
             s[i][strlen(s[i])-1] = '\0';
         }
-        //printf("%s",s[i]);
         i++;
+
+        s[i]=NULL;
+        s_i_size=0;
     }
     fclose(ft);
     Random(line,qes,num);
+
 }
 
-void Output(int frag){
+void Output(bool is_all){
     int line=0; //タグファイルの行数(何もない改行をしない)
     int qes=0;//出題数
     int num[100]={0}; //ランダム数格納用
-    char s[100][30]; //100列分、1列辺り30文字まで
+    char* s[100]; //100列分、1列辺り30文字まで
     char str[10]={};
 
-    for(int i=0;i<100;i++){
-        s[i][0]='\0';
-    }
-
-    if(frag==1){
-        printf("タグを選択してください\n");
-        scanf("%s",str);
-    }else{
+    if(is_all){
         strcpy(str,"All");//全問題のファイルはAll.txtとする
+    }else{
+        puts("タグを選択してください");
+        scanf("%s",str);
     }
     Select(str,&line,s,&qes,num);
     /*
@@ -375,10 +372,10 @@ void Menu(){
         scanf("%ms",&buf);
         if(strcmp(buf,"1")==0){
             //puts("success!\n");
-            Output(1);
+            Output(false);
         }else if(strcmp(buf,"2")==0){
             //puts("ええかんでぃ\n");
-            Output(0);
+            Output(true);
         }else if(strcmp(buf,"0")==0){
             puts("お疲れ様でした。\n");
             return;
