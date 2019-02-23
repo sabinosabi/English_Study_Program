@@ -472,14 +472,12 @@ void DeleteTagFiles(){
     free(dir_list);
 }
 
-void CreateAllTagFile(char qpath[30]){
+void AppendAllTagFile(char* qpath){
     /*
        「All.txt」というタグファイルを作成する関数
        */
-    FILE *f;
-
-    f = fopen("tags/All.txt","a");
-    fprintf(f,"%s\n",&qpath[10]);
+    FILE *f = fopen("tags/All.txt","a");
+    fprintf(f,"%s\n",qpath);
     fclose(f);
 }
 
@@ -511,7 +509,7 @@ void ManageTag(){
         char *qpath;
         asprintf(&qpath,"questions/%s",dir_list[dir_num]->d_name);
 
-        CreateAllTagFile(qpath);
+        AppendAllTagFile(qpath);
 
         struct Tags tags;
         //FIXME:マジックナンバー
