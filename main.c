@@ -249,35 +249,32 @@ int Question(data x,int k)
     }
 }
 
-data Qopen(int qes,char s[][30],int* num){
-    int i,H;
-    int good=0, bad=0; //正解数、不正解数確認用
-    data p[qes];
-    for(i=0;i<qes;i++){
-        char qespath[30]={};
-        char str0[] ="questions/";
-        strcat(qespath,str0);
-        strcat(qespath,s[num[i]-1]);
-        //printf("%s\n",qespath);
+data Qopen(int qes,char* q_filenames[100],int* num){
+    int good_count=0;
+    int bad_count=0;
+    for(int i=0;i<qes;i++){
+        char *qespath;
+        asprintf(&qespath,"questions/%s",q_filenames[num[i]-1]);
+        data p[qes];
         p[i]=ReadFile(qespath);
-        H=Question(p[i],i+1);
-        if(H==1){
-            good++;
-        }else if(H==0){
-            bad++;
+        free(qespath);
+        if(Question(p[i],i+1)){
+            good_count++;
+        }else{
+            bad_count++;
         }
     }
-    printf("\n問題数:%d  正解数:%d  不正解数:%d\n",qes,good,bad);
-    if((float)good/qes>=0.8){
-        printf("評価:◎\n");
-    }else if((float)good/qes>=0.5){
-        printf("評価:○\n");
-    }else if((float)good/qes>=0.2){
-        printf("評価:△\n");
+    printf("\n問題数:%d  正解数:%d  不正解数:%d\n",qes,good_count,bad_count);
+    if((float)good_count/qes>=0.8){
+        puts("評価:◎");
+    }else if((float)good_count/qes>=0.5){
+        puts("評価:○");
+    }else if((float)good_count/qes>=0.2){
+        puts("評価:△");
     }else {
-        printf("評価:×\n");
+        puts("評価:×");
     }//なんとなく評価値
-    puts();
+    puts("");
 }
 
 void Random(int* line,int* qes,int* num){
@@ -299,7 +296,7 @@ void Random(int* line,int* qes,int* num){
     }
 }
 
-void Select(char* tagname, int* line, char* tagnames[100], int* qes,int* num){
+void Select(char* tagname, int* line, char* q_filenames[100], int* qes,int* num){
     /* タグファイル選択 */
     char* path;
     asprintf(&path,"tags/%s.txt",tagname);
@@ -312,19 +309,19 @@ void Select(char* tagname, int* line, char* tagnames[100], int* qes,int* num){
 
     *line=0; 
     int i=0;
-    tagnames[i]=NULL;
+    q_filenames[i]=NULL;
     size_t s_i_size=0;
-    while(getline(&tagnames[i],&s_i_size,ft)!=-1){
+    while(getline(&q_filenames[i],&s_i_size,ft)!=-1){
         (*line)++;
         //改行消し
-        if(tagnames[i][strlen(tagnames[i])-2] == '\r'){
-            tagnames[i][strlen(tagnames[i])-2] = '\0';
+        if(q_filenames[i][strlen(q_filenames[i])-2] == '\r'){
+            q_filenames[i][strlen(q_filenames[i])-2] = '\0';
         }else{
-            tagnames[i][strlen(tagnames[i])-1] = '\0';
+            q_filenames[i][strlen(q_filenames[i])-1] = '\0';
         }
         i++;
 
-        tagnames[i]=NULL;
+        q_filenames[i]=NULL;
         s_i_size=0;
     }
     fclose(ft);
@@ -335,7 +332,7 @@ void Output(bool is_all){
     int line=0; //タグファイルの行数(何もない改行をしない)
     int qes=0;//出題数
     int num[100]={0}; //ランダム数格納用
-    char* s[100]; //100列分、1列辺り30文字まで
+    char* q_filenames[100]; //100列分、1列辺り30文字まで
 
     char* tagname;
     if(is_all){
@@ -344,7 +341,7 @@ void Output(bool is_all){
         puts("タグを選択してください");
         scanf("%ms",&tagname);
     }
-    Select(tagname,&line,s,&qes,num);
+    Select(tagname,&line,q_filenames,&qes,num);
 
     //TODO:free(tagname);
 
@@ -358,7 +355,7 @@ void Output(bool is_all){
        printf("%s\n",s[i]);
        }
        */
-    Qopen(qes,s,num);
+    Qopen(qes,q_filenames,num);
 }//str(適当なタグ名保管変数)にmenu部で格納済みの場合不要
 
 void Menu(){
