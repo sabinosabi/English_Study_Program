@@ -342,8 +342,7 @@ void Output(bool is_all){
         scanf("%ms",&tagname);
     }
     Select(tagname,&line,q_filenames,&qes,num);
-
-    //TODO:free(tagname);
+    free(tagname);
 
     /*
        for(int i=0;i<=30;i++){
