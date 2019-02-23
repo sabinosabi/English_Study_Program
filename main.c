@@ -506,14 +506,13 @@ void ManageTag(){
             continue;
         }
 
-        char *qpath;
-        asprintf(&qpath,"questions/%s",dir_list[dir_num]->d_name);
-
-        AppendAllTagFile(qpath);
+        AppendAllTagFile(dir_list[dir_num]->d_name);
 
         struct Tags tags;
         //FIXME:マジックナンバー
         tags.tags=malloc(1024*sizeof(char*));
+        char *qpath;
+        asprintf(&qpath,"questions/%s",dir_list[dir_num]->d_name);
         TagRead(qpath,&tags);
         for(int i=0;i<tags.length;++i){
             char *tag_path;
