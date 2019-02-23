@@ -277,7 +277,7 @@ data Qopen(int qes,char s[][30],int* num){
     }else {
         printf("評価:×\n");
     }//なんとなく評価値
-    printf("\n");
+    puts();
 }
 
 void Random(int* line,int* qes,int* num){
@@ -299,7 +299,7 @@ void Random(int* line,int* qes,int* num){
     }
 }
 
-void Select(char tagname[10], int* line, char* s[100], int* qes,int* num){
+void Select(char* tagname, int* line, char* tagnames[100], int* qes,int* num){
     /* タグファイル選択 */
     char* path;
     asprintf(&path,"tags/%s.txt",tagname);
@@ -312,24 +312,23 @@ void Select(char tagname[10], int* line, char* s[100], int* qes,int* num){
 
     *line=0; 
     int i=0;
-    s[i]=NULL;
+    tagnames[i]=NULL;
     size_t s_i_size=0;
-    while(getline(&s[i],&s_i_size,ft)!=-1){
+    while(getline(&tagnames[i],&s_i_size,ft)!=-1){
         (*line)++;
         //改行消し
-        if(s[i][strlen(s[i])-2] == '\r'){
-            s[i][strlen(s[i])-2] = '\0';
+        if(tagnames[i][strlen(tagnames[i])-2] == '\r'){
+            tagnames[i][strlen(tagnames[i])-2] = '\0';
         }else{
-            s[i][strlen(s[i])-1] = '\0';
+            tagnames[i][strlen(tagnames[i])-1] = '\0';
         }
         i++;
 
-        s[i]=NULL;
+        tagnames[i]=NULL;
         s_i_size=0;
     }
     fclose(ft);
     Random(line,qes,num);
-
 }
 
 void Output(bool is_all){
@@ -337,15 +336,18 @@ void Output(bool is_all){
     int qes=0;//出題数
     int num[100]={0}; //ランダム数格納用
     char* s[100]; //100列分、1列辺り30文字まで
-    char str[10]={};
 
+    char* tagname;
     if(is_all){
-        strcpy(str,"All");//全問題のファイルはAll.txtとする
+        asprintf(&tagname,"All");//全問題のファイルはAll.txtとする
     }else{
         puts("タグを選択してください");
-        scanf("%s",str);
+        scanf("%ms",&tagname);
     }
-    Select(str,&line,s,&qes,num);
+    Select(tagname,&line,s,&qes,num);
+
+    //TODO:free(tagname);
+
     /*
        for(int i=0;i<=30;i++){
        printf("%d\n",num[i]);
