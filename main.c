@@ -60,35 +60,19 @@ char SpritSpace(char *readline, int mode,data *x) {
 
 data ReadFile(char filepath[]) {
     data x;
+
     FILE *fo;
-    char filename[100];
-    char readline[100] = {'\0'};
-
-    for(int i=0;i<10;i++){
-        x.tag[i][0] = '\0';
-    }
-    for(int i=0;i<4;i++){
-        x.choice[i][0] = '\0';
-    }
-
-    x.question[0] = '\0';
-    x.modelans[0] = '\0';
-    x.quespath[0] = '\0';
-    x.wrongchoice = 0;
-
-
-    //memcpy(filename,filepath,strlen(filepath));
-    strcpy(filename,filepath);
-
-
-    if ((fo = fopen(filename, "r")) == NULL) {
-        fprintf(stderr, "error:%sのオープンに失敗しました。\n", filename);
+    if ((fo = fopen(filepath, "r")) == NULL) {
+        fprintf(stderr, "error:%sのオープンに失敗しました。\n", filepath);
         exit(EXIT_FAILURE);
     }
 
 
-
     /* 1行目の処理 <tag> */
+    for(int i=0;i<10;i++){
+        x.tag[i][0] = '\0';
+    }
+    char readline[100] = {'\0'};
     fgets(readline, 100, fo);
     if (strstr(readline, " ")!=NULL) {
         SpritSpace(RemoveN(readline), 0, &x);
@@ -109,6 +93,9 @@ data ReadFile(char filepath[]) {
     //puts(x.question);
 
     /* 4行目の処理 <choice> */
+    for(int i=0;i<4;i++){
+        x.choice[i][0] = '\0';
+    }
     fgets(readline, 100, fo);
     SpritSpace(RemoveN(readline), 1, &x);
 
@@ -123,7 +110,7 @@ data ReadFile(char filepath[]) {
     }
 
     /* quespathを代入 */
-    strcpy(x.quespath,filename);
+    strcpy(x.quespath,filepath);
 
     fclose(fo);
     return x;
