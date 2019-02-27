@@ -17,6 +17,7 @@ typedef struct Data{
 
 struct Tags{
     size_t length;
+    size_t allocated_length;
     char** tags;
 };
 
@@ -398,6 +399,10 @@ tags:タグを格納するために持ってくるcharのポインタの配列
     while(tags->tags[i]!=NULL){
         i++;
         tags->tags[i] = strtok(NULL," ");
+        if(i>=tags->allocated_length-1){
+            tags->allocated_length+=256;
+            realloc(tags->tags,tags->allocated_length);
+        }
     }
     //LinuxかWindowsで改行コードが違うので
     if(tags->tags[i-1][strlen(tags->tags[i-1])-2] == '\r'){
@@ -468,8 +473,8 @@ void ManageTag(){
         AppendAllTagFile(dir_list[dir_num]->d_name);
 
         struct Tags tags;
-        //FIXME:マジックナンバー
-        tags.tags=malloc(1024*sizeof(char*));
+        tags.allocated_length=256;
+        tags.tags=malloc(tags.allocated_length*sizeof(char*));
         char *qpath;
         asprintf(&qpath,"questions/%s",dir_list[dir_num]->d_name);
         TagRead(qpath,&tags);
