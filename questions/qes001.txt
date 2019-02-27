@@ -1,5 +1,5 @@
 動詞 形容詞 TOEFL
-0
+1
 test1
 are is am do
 are
